@@ -62,6 +62,37 @@ in the zlib (`PlZ`) format, which the game and server still accept.
    The server autosaves every ~30 s — if something is wrong, stop it before an
    autosave overwrites your upload.
 
+## Editing, adding pals, importing
+
+All of these work on whatever world you've loaded (co-op or server) and end
+with **Download world as-is (.zip)** — originals are never touched.
+
+**Editing** — click a player row to open their details, then enable editing
+via the warning box. Player level, unspent stat points and tech points are
+edited in the chips; each pal row has level, stars, IVs, a Normal/Lucky/Boss
+variant selector (they're mutually exclusive in-game), and passive badges
+with a searchable picker (colored by the game's tier scheme: white → gold →
+blue, red for negatives). "Max" buttons exist per player and world-wide.
+Every apply re-parses the result before keeping it.
+
+**Adding pals** — "+ Add pal" in a player's detail panel (their player file
+must be in the loaded folder — it locates their palbox). Pick any of the 289
+released Paldeck species, level, variant and gender. New pals are cloned from
+a valid existing entry (never built from scratch), get random IVs like a wild
+catch, land in the first free palbox slot and are registered with the guild.
+The ⧉ button on any pal row makes an exact duplicate. Unreleased/datamined
+species are deliberately not offered.
+
+**Importing players** — load the destination world, then select the other
+world's folder in the import card. Pick players to bring over: their
+character, pals, party, palbox, full inventory and guild membership move
+together. Players who already exist can be **replaced** (their old character,
+pals and containers are cleanly removed first). A co-op host (`…0001`) in the
+source is imported **as** a real GUID — auto-suggested when a player with the
+same character name exists in the destination — with the whole host fix
+applied mid-merge. Pals shared between related worlds via dimensional storage
+are re-instanced automatically instead of colliding.
+
 ## Python CLI
 
 The `python/` directory has the same logic as a script (this is what the web
@@ -75,22 +106,40 @@ PYTHONPATH=python/vendor python python/identify_players.py <world_dir>
 
 `<old_guid>` is virtually always `00000000000000000000000000000001`.
 
-## How it's tested
+## Development & testing
 
-`test/parity.test.mjs` runs the JavaScript implementation against real 1.0
-saves and asserts:
+The web app is plain ES modules — no build step. Serve it locally with
+`python serve.py` (caching disabled, so edits show on refresh) and open
+`http://localhost:8123`.
 
-- parse → rewrite reproduces the decompressed `Level.sav` **byte-identically**;
-- the JS migration output is **byte-identical** to the Python implementation's
-  output for the same inputs.
+The GVAS engine (`docs/js/gvas.js`) is a JavaScript port of
+palworld-save-tools with additions the 1.0 format needs: `PlM`/Oodle
+decompression, `SetProperty` support, and the current guild/group binary
+layout. Guild blobs, item containers and anything else not needed for an
+operation are carried as opaque bytes, which is what makes lossless
+round-trips possible.
 
-Run it with `node test/parity.test.mjs <coop-world> <server-world> <old-guid> <new-guid>`.
+`test/` holds the suites, all of which run against real saves (not committed):
+
+- `parity.test.mjs` — parse → rewrite reproduces `Level.sav` byte-identically,
+  and the JS migration output is **byte-identical to the Python
+  implementation's** for the same inputs
+- `groups.check.mjs`, `roundtrip2.check.mjs` — guild parser / newer-format
+  round-trips
+- `edit.check.mjs`, `variant.check.mjs`, `addpal.check.mjs` — editing engines
+- `transfer.check.mjs`, `hostimport.check.mjs` — cross-world import, replace
+  mode, host GUID fix
+
+Run with any Node ≥ 18, e.g.
+`node test/parity.test.mjs <coop-world> <server-world> <old-guid> <new-guid>`.
 
 ## Built on
 
 - [palworld-save-tools](https://github.com/cheahjs/palworld-save-tools) (MIT) — GVAS format base
 - [palworld-hostfix-toolkit](https://github.com/quadrantbs/palworld-hostfix-toolkit) (MIT) — the 4-layer fix procedure and 1.0-format parsers
 - [xNul/palworld-host-save-fix](https://github.com/xNul/palworld-host-save-fix) (MIT) — the original host fix
+- [oMaN-Rod/uesave-rs](https://github.com/oMaN-Rod/uesave-rs) (`palworld-v1` branch) — the 1.0 guild/group binary layout, used by [palworld-save-pal](https://github.com/oMaN-Rod/palworld-save-pal)
+- [palworld-atlas-data](https://github.com/Awy64/palworld-atlas-data) (MIT) and palworld-save-pal's localization data — species names, Paldeck numbers, elements, passive skills
 - [ooz-wasm](https://www.npmjs.com/package/ooz-wasm) (GPL-3.0) / [pyooz](https://pypi.org/project/pyooz/) — open-source Oodle Kraken decompression ([powzix/ooz](https://github.com/powzix/ooz))
 
 Pal icons (`docs/icons/`) are © Pocketpair, Inc., sourced via
