@@ -111,6 +111,12 @@
     <select id="hostSelect"></select>
     <label for="newGuid">New GUID assigned by the server (32 hex characters, from the filename)</label>
     <input type="text" id="newGuid" placeholder="e.g. A6CDA5A4000000000000000000000000" spellcheck="false">
+    <div class="drop" id="serverDrop" style="margin-top:12px; padding:14px;">
+      Auto-detect: click to select the <b>server's</b> world folder (or just its <span class="mono">Players/</span> folder)<br>
+      <small>The player file that doesn't match any co-op player is the host's new GUID.</small>
+    </div>
+    <input type="file" id="serverPicker" webkitdirectory multiple class="hidden">
+    <div class="hint" id="detectStatus" style="margin-top:8px;"></div>
     <label for="folderName">World folder name inside the zip (use the server's folder name)</label>
     <input type="text" id="folderName" spellcheck="false">
     <button id="convertBtn">Convert</button>

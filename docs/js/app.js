@@ -141,6 +141,40 @@ function setReport(lines, isError) {
   if (isError) el.innerHTML = `<span class="bad">${el.innerHTML}</span>`;
 }
 
+// ---------- auto-detect new GUID from server Players folder ----------
+
+$("serverDrop").addEventListener("click", () => $("serverPicker").click());
+$("serverPicker").addEventListener("change", (e) => {
+  const files = [...e.target.files];
+  const known = new Set(state.playerFiles.keys()); // co-op GUIDs incl. ...0001
+  const candidates = [];
+  for (const f of files) {
+    const rel = (f.webkitRelativePath || f.name).replace(/\\/g, "/");
+    if (/(^|\/)backup\//i.test(rel)) continue;
+    const base = rel.split("/").pop();
+    const m = /^([0-9A-Fa-f]{32})\.sav$/.exec(base);
+    if (!m || !/(^|\/)Players\//.test(rel)) continue;
+    const guid = m[1].toUpperCase();
+    if (!known.has(guid)) candidates.push({ guid, mtime: f.lastModified, size: f.size });
+  }
+  const status = $("detectStatus");
+  if (candidates.length === 0) {
+    status.textContent =
+      "No new player file found on the server — the host needs to join the server once (creating a fresh character) first.";
+    return;
+  }
+  candidates.sort((a, b) => b.mtime - a.mtime);
+  $("newGuid").value = candidates[0].guid;
+  if (candidates.length === 1) {
+    status.textContent = `Detected host GUID: ${candidates[0].guid}`;
+  } else {
+    status.textContent =
+      `Found ${candidates.length} unknown player files — filled in the most recent (${candidates[0].guid}). ` +
+      `Others: ${candidates.slice(1).map((c) => c.guid).join(", ")}. ` +
+      "If several people joined fresh, pick the host's by join time.";
+  }
+});
+
 // ---------- conversion ----------
 
 $("convertBtn").addEventListener("click", async () => {

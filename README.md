@@ -39,7 +39,9 @@ in the zlib (`PlZ`) format, which the game and server still accept.
    the host's real GUID. **Player GUIDs cannot be computed from Steam IDs since
    Palworld 1.0** — the join-once step is required.
 3. Open the [web app](https://zlmitchell.github.io/palworld-save-toolkit/),
-   select your world folder, enter the host's new GUID, convert, download.
+   select your co-op world folder, then select the server's world folder to
+   **auto-detect the host's new GUID** (it's the player file that doesn't match
+   any co-op player) — or type it in manually. Convert, download.
 4. Replace the world folder on the server with the zip contents (delete the
    old `Players/00000000...0001.sav`), fix file ownership, start the server.
 5. **Verify everyone's characters, pals and guild within the first minutes.**
