@@ -1,0 +1,56 @@
+from typing import Any, Sequence
+
+from palworld_save_tools.archive import *
+
+
+def decode(
+    reader: FArchiveReader, type_name: str, size: int, path: str
+) -> dict[str, Any]:
+    if type_name != "ArrayProperty":
+        raise Exception(f"Expected ArrayProperty, got {type_name}")
+    value = reader.property(type_name, size, path, nested_caller_path=path)
+    char_bytes = value["value"]["values"]
+    try:
+        value["value"] = decode_bytes(reader, char_bytes)
+    except Exception as e:
+        print(f"Warning: failed to decode {path}, keeping raw bytes: {e}")
+    return value
+
+
+def decode_bytes(
+    parent_reader: FArchiveReader, char_bytes: Sequence[int]
+) -> dict[str, Any]:
+    reader = parent_reader.internal_copy(bytes(char_bytes), debug=False)
+    char_data = {
+        "object": reader.properties_until_end(),
+        "unknown_bytes": reader.byte_list(4),
+        "group_id": reader.guid(),
+    }
+    if not reader.eof():
+        # Newer save versions append extra trailing bytes this decoder doesn't understand
+        # yet. Preserve them opaquely so the round trip stays lossless instead of erroring.
+        char_data["trailing_bytes"] = list(reader.read_to_end())
+    return char_data
+
+
+def encode(
+    writer: FArchiveWriter, property_type: str, properties: dict[str, Any]
+) -> int:
+    if property_type != "ArrayProperty":
+        raise Exception(f"Expected ArrayProperty, got {property_type}")
+    del properties["custom_type"]
+    if "values" not in properties["value"]:
+        encoded_bytes = encode_bytes(properties["value"])
+        properties["value"] = {"values": [b for b in encoded_bytes]}
+    return writer.property_inner(property_type, properties)
+
+
+def encode_bytes(p: dict[str, Any]) -> bytes:
+    writer = FArchiveWriter()
+    writer.properties(p["object"])
+    writer.write(bytes(p["unknown_bytes"]))
+    writer.guid(p["group_id"])
+    if "trailing_bytes" in p:
+        writer.write(bytes(p["trailing_bytes"]))
+    encoded_bytes = writer.bytes()
+    return encoded_bytes
