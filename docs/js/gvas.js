@@ -159,6 +159,21 @@ export class FReader {
         id: this.optionalGuid(),
         value: this.arrayProperty(arrayType, size - 4, path),
       };
+    } else if (typeName === "SetProperty") {
+      // TSet<T>: element type, optional guid, u32 "elements to remove"
+      // (always 0 in practice, preserved anyway), count, then elements
+      // serialized exactly like MapProperty keys/values.
+      const setType = this.fstring();
+      const id = this.optionalGuid();
+      const removed = this.u32();
+      const count = this.u32();
+      const setPath = path + ".Set";
+      const setStructType = setType === "StructProperty" ? this.getTypeOr(setPath, "StructProperty") : null;
+      const values = [];
+      for (let i = 0; i < count; i++) {
+        values.push(this.propValue(setType, setStructType, setPath));
+      }
+      value = { set_type: setType, set_struct_type: setStructType, removed, id, value: values };
     } else if (typeName === "MapProperty") {
       const keyType = this.fstring();
       const valueType = this.fstring();
@@ -391,6 +406,18 @@ export class FWriter {
       const arrayWriter = this.copy();
       arrayWriter.arrayProperty(property.array_type, property.value);
       const buf = arrayWriter.bytes();
+      size = buf.byteLength;
+      this.write(buf);
+    } else if (propertyType === "SetProperty") {
+      this.fstring(property.set_type);
+      this.optionalGuid(property.id ?? null);
+      const setWriter = this.copy();
+      setWriter.u32(property.removed ?? 0);
+      setWriter.u32(property.value.length);
+      for (const v of property.value) {
+        setWriter.propValue(property.set_type, property.set_struct_type, v);
+      }
+      const buf = setWriter.bytes();
       size = buf.byteLength;
       this.write(buf);
     } else if (propertyType === "MapProperty") {

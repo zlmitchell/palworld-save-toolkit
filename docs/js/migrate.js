@@ -57,11 +57,32 @@ function saveParamOf(entry) {
   return raw.object.SaveParameter.value;
 }
 
-/** World summary: players (nickname/level), pal count, per-uid key counts. */
+// Unwrap a property to its plain value (handles ByteProperty/EnumProperty
+// nesting like {type, value} and BigInt-backed 64-bit values).
+function val(prop) {
+  if (prop === null || prop === undefined) return null;
+  let v = prop.value;
+  if (v !== null && typeof v === "object" && !Array.isArray(v) && "value" in v) v = v.value;
+  if (typeof v === "bigint") v = Number(v);
+  return v;
+}
+
+function enumVal(prop) {
+  const v = val(prop);
+  return typeof v === "string" ? v.split("::").pop() : null;
+}
+
+// FixedPoint64 struct: {Value: Int64Property}, scaled by 1000
+function fixedPoint(prop) {
+  const v = prop?.value?.Value?.value;
+  return v === undefined ? null : Number(v) / 1000;
+}
+
+/** World summary: players (with stats), owned pals, guild count. */
 export async function inspectWorld(levelBytes, ooz) {
   const { level } = await parseLevel(levelBytes, ooz);
   const players = [];
-  let palCount = 0;
+  const pals = [];
   let undecoded = 0;
   for (const e of charMapOf(level)) {
     const sp = saveParamOf(e);
@@ -71,17 +92,64 @@ export async function inspectWorld(levelBytes, ooz) {
         uid: String(e.key.PlayerUId.value),
         instanceId: String(e.key.InstanceId.value),
         nickname: sp.NickName?.value ?? "(unnamed)",
-        level: sp.Level?.value?.value ?? sp.Level?.value ?? null,
+        level: val(sp.Level),
+        exp: val(sp.Exp),
+        hp: fixedPoint(sp.Hp),
+        fullStomach: val(sp.FullStomach),
+        unusedStatusPoints: val(sp.UnusedStatusPoint),
       });
     } else {
-      palCount++;
+      const characterId = val(sp.CharacterID) ?? "?";
+      const isAlpha = /^boss_/i.test(characterId);
+      pals.push({
+        instanceId: String(e.key.InstanceId.value),
+        owner: sp.OwnerPlayerUId ? String(sp.OwnerPlayerUId.value) : null,
+        originalOwner: sp.OldOwnerPlayerUIds?.value?.values?.length
+          ? String(sp.OldOwnerPlayerUIds.value.values[0])
+          : null,
+        characterId,
+        species: characterId.replace(/^boss_/i, ""),
+        alpha: isAlpha,
+        nickname: sp.NickName?.value ?? null,
+        gender: enumVal(sp.Gender),
+        level: val(sp.Level) ?? 1,
+        rank: val(sp.Rank) ?? 1,
+        lucky: val(sp.IsRarePal) === true,
+        talents: {
+          hp: val(sp.Talent_HP) ?? 0,
+          melee: val(sp.Talent_Melee) ?? 0,
+          shot: val(sp.Talent_Shot) ?? 0,
+          defense: val(sp.Talent_Defense) ?? 0,
+        },
+        passives: sp.PassiveSkillList?.value?.values ?? [],
+        friendship: val(sp.FriendshipPoint) ?? 0,
+      });
     }
   }
   const wsd = level.properties.worldSaveData.value;
   const guilds = (wsd.GroupSaveDataMap?.value ?? []).filter(
     (g) => g.value.GroupType.value.value === "EPalGroupType::Guild"
   ).length;
-  return { players, palCount, guilds, undecoded, warnings: level.warnings };
+  return { players, pals, palCount: pals.length, guilds, undecoded, warnings: level.warnings };
+}
+
+/** Extra per-player details from their Players/<guid>.sav file. */
+export async function inspectPlayerFile(playerBytes, ooz) {
+  const { player } = await parsePlayer(playerBytes, ooz);
+  const sd = player.properties.SaveData.value;
+  let lastOnline = null;
+  const ticks = sd.LastOnlineDateTime?.value;
+  if (typeof ticks === "bigint") {
+    // .NET ticks (100ns since 0001-01-01) -> JS Date
+    lastOnline = new Date(Number((ticks - 621355968000000000n) / 10000n));
+  }
+  return {
+    platform: enumVal(sd.PlayerPlatform),
+    techPoints: val(sd.TechnologyPoint),
+    ancientTechPoints: val(sd.bossTechnologyPoint),
+    unlockedTech: sd.UnlockedRecipeTechnologyNames?.value?.values?.length ?? 0,
+    lastOnline,
+  };
 }
 
 /**

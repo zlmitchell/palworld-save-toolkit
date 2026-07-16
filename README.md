@@ -1,11 +1,25 @@
 # Palworld Save Toolkit
 
-Convert a **local co-op Palworld world into a dedicated-server world** — host
-character, pals, guild membership and all. Works with post-1.0 saves
+A browser-based workshop for Palworld saves. Works with post-1.0 saves
 (Oodle-compressed `PlM` format, 2026 "Tides of Terraria" update and later).
 
 **[▶ Use it in your browser](https://zlmitchell.github.io/palworld-save-toolkit/)** —
 everything runs client-side. Your save files never leave your computer.
+
+- **Convert** a local co-op world into a dedicated-server world — host
+  character, pals, guild membership and all (the 4-layer fix below).
+- **Inspect** worlds: players with stats/platform/tech, every pal with real
+  species names, Paldeck numbers, icons, element types, IVs, and passive
+  skills rendered with the game's tier colors.
+- **Edit** (behind a "this can take the fun out of the game" gate): player
+  levels and stat/tech points; pal levels, IVs, rank stars, souls,
+  Normal/Lucky/Boss variant, and passives via a searchable picker; max
+  buttons per player or world-wide.
+- **Add pals**: clone-and-respec any released Paldeck species into a player's
+  palbox, or duplicate an existing pal.
+- **Import players between worlds**: character, pals, party/palbox, full
+  inventory and guild membership move together; existing players can be
+  replaced; co-op hosts are fixed onto their real GUID during the merge.
 
 ## Why this exists
 
@@ -79,5 +93,11 @@ Run it with `node test/parity.test.mjs <coop-world> <server-world> <old-guid> <n
 - [xNul/palworld-host-save-fix](https://github.com/xNul/palworld-host-save-fix) (MIT) — the original host fix
 - [ooz-wasm](https://www.npmjs.com/package/ooz-wasm) (GPL-3.0) / [pyooz](https://pypi.org/project/pyooz/) — open-source Oodle Kraken decompression ([powzix/ooz](https://github.com/powzix/ooz))
 
-Licensed **GPL-3.0** (required by the bundled ooz-wasm). Not affiliated with
-Pocketpair — edit save files at your own risk, with backups.
+Pal icons (`docs/icons/`) are © Pocketpair, Inc., sourced via
+[palworld.wiki.gg](https://palworld.wiki.gg/) and included under fair use for
+this non-commercial fan tool. Species/passive data compiled from the game by
+the community projects credited above.
+
+Licensed **GPL-3.0** (required by the bundled ooz-wasm; game assets and data
+excluded). Not affiliated with Pocketpair — edit save files at your own risk,
+with backups.

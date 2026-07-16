@@ -16,6 +16,14 @@
     font: 15px/1.55 system-ui, "Segoe UI", sans-serif;
   }
   .wrap { max-width: 880px; margin: 0 auto; padding: 32px 20px 80px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .ghlink {
+    display: inline-flex; align-items: center; gap: 7px; color: var(--text);
+    text-decoration: none; font-size: 14px; font-weight: 600;
+    border: 1px solid var(--border); border-radius: 8px; padding: 7px 13px;
+    background: var(--panel);
+  }
+  .ghlink:hover { border-color: var(--accent); color: var(--accent); }
   h1 { font-size: 26px; margin: 0 0 4px; }
   h1 .pal { color: var(--accent); }
   .tagline { color: var(--muted); margin: 0 0 10px; }
@@ -65,6 +73,96 @@
   }
   .report .good { color: var(--accent2); }
   .report .bad { color: var(--err); }
+  tr.player-row { cursor: pointer; }
+  tr.player-row:hover td { background: var(--panel2); }
+  tr.player-row td:first-child::before { content: "▸ "; color: var(--muted); }
+  tr.player-row.open td:first-child::before { content: "▾ "; }
+  tr.detail-row > td { background: var(--panel2); padding: 14px 16px 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .chip {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 10px; font-size: 12.5px; color: var(--muted);
+  }
+  .chip b { color: var(--text); }
+  .pals-table { font-size: 13px; }
+  .pals-table td, .pals-table th { padding: 5px 8px; }
+  .tag { font-size: 11px; border-radius: 4px; padding: 1px 6px; margin-left: 5px; font-weight: 700; }
+  .tag.alpha { background: #3a1f24; color: var(--err); }
+  .tag.lucky { background: #33301a; color: var(--warn); }
+  .iv { color: var(--muted); font-size: 12px; }
+  .warnbox {
+    margin-top: 16px; background: #2c2416; border: 1px solid #57431f;
+    border-radius: 8px; padding: 13px 16px; color: var(--warn); font-size: 13.5px;
+  }
+  .warnbox .warnbtn {
+    background: transparent; border: 1px solid var(--warn); color: var(--warn);
+    font-size: 13px; padding: 7px 14px; margin-top: 10px;
+  }
+  .warnbox .warnbtn:hover { background: #3a2f1a; }
+  .warnaction { background: var(--warn); }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--text); }
+  .edit-num { width: 52px; background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 5px; padding: 3px 5px; font-size: 12.5px; font-family: ui-monospace, Consolas, monospace; }
+  /* no spinner buttons — type or use the mouse wheel while hovering */
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+  input[type=number]:hover { border-color: var(--accent); }
+  .edit-iv { width: 42px; }
+  .edit-passives { width: 100%; background: var(--panel); color: var(--text); border: 1px solid var(--border); border-radius: 5px; padding: 3px 6px; font-size: 12px; font-family: ui-monospace, Consolas, monospace; }
+  .applybar { margin-top: 12px; display: flex; gap: 10px; align-items: center; }
+  .applybar button { margin-top: 0; }
+  .palicon { width: 22px; height: 22px; vertical-align: -6px; margin-right: 5px; border-radius: 50%; }
+  .picker .palicon { width: 20px; height: 20px; vertical-align: -5px; }
+  .dupbtn {
+    background: var(--panel); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 5px; padding: 2px 8px; margin: 0; font-size: 13px; cursor: pointer;
+  }
+  .dupbtn:hover { color: var(--accent); border-color: var(--accent); }
+  .el { font-size: 11px; color: var(--muted); }
+  .elchip {
+    display: inline-block; font-size: 10.5px; font-weight: 700; border-radius: 4px;
+    padding: 0 6px; margin-left: 2px; color: var(--elc);
+    border: 1px solid color-mix(in srgb, var(--elc) 55%, transparent);
+    background: color-mix(in srgb, var(--elc) 14%, transparent);
+  }
+  /* in-game tier colors: rank 1-2 white, rank 3 gold, rank 4+ blue, negative red */
+  .pbadge {
+    display: inline-block; border-radius: 4px; padding: 1px 7px; margin: 1px 3px 1px 0;
+    font-size: 11.5px; font-weight: 600; white-space: nowrap; cursor: default;
+    background: #24272d; color: #e6e9ee; border: 1px solid #4a505c;
+  }
+  .pbadge .arrows { font-size: 10px; margin-left: 3px; color: #dfe5ee; }
+  .pbadge.r3 {
+    background: #3a3110; color: #ffd84d; border-color: #7a6420;
+  }
+  .pbadge.r3 .arrows { color: #ffc93a; }
+  .pbadge.r4, .pbadge.r5 {
+    background: #17404d; color: #eefaff; border-color: #40819a;
+    box-shadow: inset 0 0 6px rgba(63, 217, 192, .15);
+  }
+  .pbadge.r4 .arrows, .pbadge.r5 .arrows { color: #46f0c2; }
+  .pbadge.neg { background: #3a1f22; color: #f08a8a; border-color: #63333a; }
+  .pbadge.neg .arrows { color: #f08a8a; }
+  .pbadge .rm { margin-left: 6px; cursor: pointer; color: var(--muted); font-weight: 700; }
+  .pbadge .rm:hover { color: var(--err); }
+  .pbadge.addbtn { cursor: pointer; background: var(--panel); color: var(--muted); border-style: dashed; }
+  .pbadge.addbtn:hover { color: var(--accent); border-color: var(--accent); }
+  .picker-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .picker {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    width: min(680px, 92vw); max-height: 78vh; display: flex; flex-direction: column;
+    padding: 16px 18px;
+  }
+  .picker h3 { margin: 0 0 10px; font-size: 15px; }
+  .picker input[type=text] { margin-bottom: 12px; font-family: inherit; }
+  .picker .list { overflow-y: auto; line-height: 2; }
+  .picker .pbadge { cursor: pointer; }
+  .picker .pbadge:hover { outline: 1px solid var(--accent); }
+  .picker .pbadge.taken { opacity: .35; cursor: not-allowed; }
   .footer { color: var(--muted); font-size: 12.5px; margin-top: 40px; }
   .footer a { color: var(--accent); }
   details { margin-top: 12px; color: var(--muted); font-size: 13.5px; }
@@ -74,7 +172,13 @@
 </head>
 <body>
 <div class="wrap">
-  <h1><span class="pal">Palworld</span> Save Toolkit</h1>
+  <div class="topbar">
+    <h1><span class="pal">Palworld</span> Save Toolkit</h1>
+    <a class="ghlink" href="https://github.com/zlmitchell/palworld-save-toolkit" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
   <p class="tagline">Convert a local co-op world into a dedicated-server world — host character, pals, guild and all.</p>
   <span class="privacy">&#128274; Runs entirely in your browser. Your save never leaves your computer.</span>
 
@@ -97,7 +201,47 @@
       <tbody></tbody>
     </table>
     <div class="stats" id="stats"></div>
+    <div class="warnbox" id="editWarn">
+      <b>&#9888; Character editing</b> — levels, stat points, maxed pals… it all works, but
+      earning these is the game. Editing can permanently take the fun out of your world,
+      for you <i>and</i> everyone playing on it. Backups are made for you automatically
+      by downloading — your originals are never touched.
+      <div><button id="enableEditBtn" class="warnbtn">I understand — enable editing</button></div>
+    </div>
+    <div id="editToolbar" class="hidden" style="margin-top:14px;">
+      <button id="maxAllBtn" class="warnaction">Max ALL pals (level / IVs / stars / souls)</button>
+    </div>
+    <div style="margin-top:8px;">
+      <button id="downloadWorldBtn" class="dl">Download world as-is (.zip)</button>
+    </div>
+    <div class="report hidden" id="editReport"></div>
     <div class="report hidden" id="inspectWarnings"></div>
+  </div>
+
+  <div class="card hidden" id="importCard">
+    <h2><span class="step">&#8853;</span>Import players from another world</h2>
+    <p class="hint">
+      Merge characters from a different save into this world — character, level, pals,
+      party, palbox, inventory, equipment and guild membership all come along.
+      Players already in this world are skipped automatically.
+    </p>
+    <div class="drop" id="importDrop">Click to choose the <b>other</b> world's folder</div>
+    <input type="file" id="importPicker" webkitdirectory multiple class="hidden">
+    <div id="importList" class="hidden">
+      <table id="importTable">
+        <thead><tr><th></th><th>Character</th><th>Level</th><th>GUID</th><th>Pals</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <label for="importGuild">Add imported players to guild</label>
+      <select id="importGuild"></select>
+      <button id="importBtn">Import selected players</button>
+      <div class="report hidden" id="importReport"></div>
+      <p class="hint" style="margin-top:10px">
+        After importing, use <b>Download world as-is</b> above (or run the server conversion below)
+        to get the merged world. Verify everyone's characters and pals in-game within the first
+        minutes — the server autosaves over anything broken.
+      </p>
+    </div>
   </div>
 
   <div class="card hidden" id="convertCard">
